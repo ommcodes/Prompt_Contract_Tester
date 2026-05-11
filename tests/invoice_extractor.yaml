@@ -1,0 +1,65 @@
+suite: invoice_extractor
+prompt: |
+  Extract invoice fields from the text below.
+  Return only a JSON object with no extra commentary.
+
+cases:
+  - name: extracts normal invoice
+    input: |
+      Invoice INV-1029 from Acme Supplies.
+      Total due: USD 1248.50.
+    mock_response: |
+      {
+        "invoice_number": "INV-1029",
+        "vendor_name": "Acme Supplies",
+        "total_amount": 1248.50,
+        "currency": "USD"
+      }
+    expect:
+      valid_json: true
+      required_keys:
+        - invoice_number
+        - vendor_name
+        - total_amount
+        - currency
+      assertions:
+        - path: invoice_number
+          equals: INV-1029
+        - path: total_amount
+          type: number
+        - path: currency
+          equals: USD
+
+  - name: missing total_amount and currency
+    input: |
+      Invoice INV-999 from Bad Corp.
+    mock_response: |
+      {"invoice_number": "INV-999", "vendor_name": "Bad Corp"}
+    expect:
+      valid_json: true
+      required_keys:
+        - invoice_number
+        - vendor_name
+        - total_amount
+        - currency
+
+  - name: forbidden vendor_id present
+    input: |
+      Invoice INV-888 from Acme. Total: USD 100.
+    mock_response: |
+      {
+        "invoice_number": "INV-888",
+        "vendor_name": "Acme",
+        "total_amount": 100,
+        "currency": "USD",
+        "vendor_id": "V-42"
+      }
+    expect:
+      valid_json: true
+      required_keys:
+        - invoice_number
+        - vendor_name
+        - total_amount
+        - currency
+      forbidden_keys:
+        - vendor_id
