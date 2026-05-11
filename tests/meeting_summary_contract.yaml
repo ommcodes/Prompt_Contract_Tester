@@ -1,0 +1,70 @@
+suite: meeting_summary_contract
+prompt: |
+  Summarize the meeting transcript.
+  Return only JSON:
+  {
+    "summary": "string",
+    "decisions": ["string"],
+    "action_items": ["string"],
+    "risks": ["string"]
+  }
+
+cases:
+  - name: extracts action item and decision
+    input: |
+      Priya: We will launch the pilot next Friday.
+      Mark: I will prepare the test dataset by Wednesday.
+      Sara: Main risk is missing approval from Legal.
+    mock_response: |
+      {
+        "summary": "The team agreed to launch the pilot next Friday.",
+        "decisions": ["Launch the pilot next Friday"],
+        "action_items": ["Mark will prepare the test dataset by Wednesday"],
+        "risks": ["Missing approval from Legal"]
+      }
+    expect:
+      valid_json: true
+      required_keys:
+        - summary
+        - decisions
+        - action_items
+        - risks
+      assertions:
+        - path: summary
+          contains: pilot
+        - path: action_items
+          type: array
+
+  - name: fails missing risks
+    input: |
+      Sara: Main risk is missing approval from Legal.
+    mock_response: |
+      {
+        "summary": "Legal approval is pending.",
+        "decisions": [],
+        "action_items": []
+      }
+    expect:
+      valid_json: true
+      required_keys:
+        - summary
+        - decisions
+        - action_items
+        - risks
+
+  - name: fails hallucinated decision
+    input: |
+      Team discussed possible launch dates but made no final decision.
+    mock_response: |
+      {
+        "summary": "The team discussed launch dates.",
+        "decisions": ["Launch approved for next Friday"],
+        "action_items": [],
+        "risks": []
+      }
+    expect:
+      valid_json: true
+      forbidden_values:
+        - path: decisions
+          values:
+            - Launch approved for next Friday
