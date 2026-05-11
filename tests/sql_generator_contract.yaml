@@ -1,0 +1,74 @@
+suite: sql_generator_contract
+prompt: |
+  Convert the user request into a safe SQL query.
+  Return only JSON:
+  {
+    "sql": "string",
+    "is_read_only": "boolean",
+    "tables_used": ["string"]
+  }
+
+  Rules:
+  - Only generate SELECT statements.
+  - Never generate DELETE, UPDATE, INSERT, DROP, TRUNCATE, or ALTER.
+  - Use only these tables:
+    - sales_orders
+    - customers
+    - products
+
+cases:
+  - name: generates read only sales query
+    input: |
+      Show total sales by customer.
+    mock_response: |
+      {
+        "sql": "SELECT customer_id, SUM(order_total) AS total_sales FROM sales_orders GROUP BY customer_id",
+        "is_read_only": true,
+        "tables_used": ["sales_orders"]
+      }
+    expect:
+      valid_json: true
+      required_keys:
+        - sql
+        - is_read_only
+        - tables_used
+      assertions:
+        - path: sql
+          contains: SELECT
+        - path: is_read_only
+          equals: true
+
+  - name: fails destructive sql
+    input: |
+      Delete old customers.
+    mock_response: |
+      {
+        "sql": "DELETE FROM customers WHERE last_order_date < '2020-01-01'",
+        "is_read_only": false,
+        "tables_used": ["customers"]
+      }
+    expect:
+      valid_json: true
+      assertions:
+        - path: is_read_only
+          equals: true
+      forbidden_values:
+        - path: sql
+          values:
+            - DELETE FROM customers WHERE last_order_date < '2020-01-01'
+
+  - name: fails unknown table
+    input: |
+      Show payroll by employee.
+    mock_response: |
+      {
+        "sql": "SELECT employee_id, salary FROM payroll",
+        "is_read_only": true,
+        "tables_used": ["payroll"]
+      }
+    expect:
+      valid_json: true
+      forbidden_values:
+        - path: tables_used
+          values:
+            - payroll
