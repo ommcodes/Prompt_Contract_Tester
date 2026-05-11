@@ -1,4 +1,4 @@
-# pct — prompt-contract-tester
+# PCT — prompt_contract_tester
 
 I write a lot of LLM-backed tools. And at some point I got tired of discovering that a prompt I tweaked last Tuesday broke something downstream — usually in production, usually on a Friday.
 
