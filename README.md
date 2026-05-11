@@ -223,3 +223,12 @@ Most of these aren't hard to add — the assertion evaluator is one function, ea
 You can, and sometimes that's the right call. But writing raw pytest for every prompt gets verbose fast, and it doesn't give non-engineers a way to read or write tests. YAML suites are easy to review in a PR, easy to hand to someone who doesn't write Python, and easy to version alongside the prompt they're testing.
 
 It's a different tradeoff, not a better one in every case.
+
+## License
+
+This project is licensed under the **PolyForm Noncommercial License 1.0.0**.
+
+You may use, modify, and distribute this software for **noncommercial purposes only** — including personal use, research, education, and use by nonprofit/government organisations. Commercial use of any kind is not permitted without explicit written permission from the author.
+
+Full license text: [LICENSE](./LICENSE)
+Canonical URL: https://polyformproject.org/licenses/noncommercial/1.0.0
