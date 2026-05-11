@@ -1,0 +1,45 @@
+suite: nested_paths_contract
+prompt: |
+  Extract customer and order details.
+  Return only JSON.
+
+cases:
+  - name: nested customer id works
+    input: |
+      Customer Acme Corp has customer id C-1001.
+      Order id is O-9001.
+    mock_response: |
+      {
+        "customer": {
+          "name": "Acme Corp",
+          "id": "C-1001"
+        },
+        "order": {
+          "id": "O-9001",
+          "amount": 250.75
+        }
+      }
+    expect:
+      valid_json: true
+      assertions:
+        - path: customer.name
+          equals: Acme Corp
+        - path: customer.id
+          equals: C-1001
+        - path: order.amount
+          type: number
+
+  - name: nested missing path fails
+    input: |
+      Customer Acme Corp has customer id C-1001.
+    mock_response: |
+      {
+        "customer": {
+          "name": "Acme Corp"
+        }
+      }
+    expect:
+      valid_json: true
+      assertions:
+        - path: customer.id
+          equals: C-1001
